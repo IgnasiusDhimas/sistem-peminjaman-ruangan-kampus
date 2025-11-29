@@ -20,6 +20,16 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        // Petugas
+        DB::table('users')->insert([
+            'name' => 'Petugas Kampus',
+            'email' => 'petugas@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'petugas',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // User biasa
         DB::table('users')->insert([
             'name' => 'Mahasiswa',

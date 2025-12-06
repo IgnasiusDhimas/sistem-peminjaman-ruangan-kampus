@@ -9,9 +9,12 @@ class PeminjamanSeeder extends Seeder
 {
     public function run(): void
     {
+        $user = \App\Models\User::find(2); // pastikan user_id 2 memang ada
+
         DB::table('peminjamans')->insert([
             [
                 'user_id' => 2, // mahasiswa
+                'email_user'=>$user->email,
                 'gedung_id' => 1,
                 'ruang_id' => 1,
                 'tanggal' => '2025-12-01',

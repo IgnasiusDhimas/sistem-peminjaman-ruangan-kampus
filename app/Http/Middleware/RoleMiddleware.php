@@ -7,10 +7,21 @@ use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role)
+    /**
+     * Handle an incoming request.
+     *
+     * Role allowed: admin, petugas, user
+     */
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!$request->user() || $request->user()->role !== $role) {
-            abort(403, 'Unauthorized.');
+        // jika belum login → redirect ke login
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // cek apakah role user sesuai dengan route yang diizinkan
+        if (!in_array(auth()->user()->role, $roles)) {
+            abort(403, "Anda tidak punya akses ke halaman ini.");
         }
 
         return $next($request);

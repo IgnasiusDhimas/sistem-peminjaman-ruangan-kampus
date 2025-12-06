@@ -31,8 +31,19 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                'unique:'.User::class,
+                'regex:/^[A-Za-z0-9._%+-]+@student\.unika\.ac\.id$/'
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            // Pesan error custom (opsional)
+            'email.regex' => 'Email harus menggunakan domain @student.unika.ac.id'
         ]);
 
         $user = User::create([
@@ -42,9 +53,9 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('user.dashboard', absolute: false));
     }
+
 }

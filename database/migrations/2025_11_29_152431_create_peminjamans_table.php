@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('gedung_id')->constrained('gedungs')->onDelete('cascade');
             $table->foreignId('ruang_id')->constrained('ruangs')->onDelete('cascade');
 
+            $table->string('email_user');
             $table->date('tanggal');
             $table->time('jam_mulai');
             $table->time('jam_selesai');

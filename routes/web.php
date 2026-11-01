@@ -17,7 +17,7 @@ use App\Http\Controllers\RuangController;
 */
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 /*
 |--------------------------------------------------------------------------

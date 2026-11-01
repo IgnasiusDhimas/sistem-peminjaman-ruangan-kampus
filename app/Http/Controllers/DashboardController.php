@@ -26,26 +26,26 @@ class DashboardController extends Controller
     }
 
     public function petugas()
-    {
-        return view('petugas.dashboard', [
-            'pending' => Peminjaman::where('status', 'pending')->count(),
-            'approved' => Peminjaman::where('status', 'approved')->count(),
-            'rejected' => Peminjaman::where('status', 'rejected')->count(),
+{
+    return view('petugas.dashboard', [
+        'pending' => Peminjaman::where('status', 'pending')->count(),
+        'approved' => Peminjaman::where('status', 'approved')->count(),
+        'rejected' => Peminjaman::where('status', 'rejected')->count(),
 
-            // Pending untuk tabel "menunggu verifikasi"
-            'menungguVerifikasi' => Peminjaman::with(['user','ruang.gedung'])
-                    ->where('status','pending')
-                    ->orderBy('tanggal')
-                    ->orderBy('jam_mulai')
-                    ->get(),
+        // Pending untuk tabel "menunggu verifikasi" - TETAP get()
+        'menungguVerifikasi' => Peminjaman::with(['user','ruang.gedung'])
+                ->where('status','pending')
+                ->orderBy('tanggal')
+                ->orderBy('jam_mulai')
+                ->get(),
 
-            // Semua peminjaman (untuk tabel bawah)
-            'semuaPeminjaman' => Peminjaman::with(['user','ruang.gedung'])
-                    ->orderBy('tanggal', 'desc')
-                    ->orderBy('jam_mulai', 'desc')
-                    ->get(),
-        ]);
-    }
+        // Semua peminjaman (untuk tabel bawah) - UBAH ke paginate()
+        'semuaPeminjaman' => Peminjaman::with(['user','ruang.gedung'])
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('jam_mulai', 'desc')
+                ->paginate(10), // <-- GANTI get() dengan paginate(10)
+    ]);
+}
 
     public function user()
     {

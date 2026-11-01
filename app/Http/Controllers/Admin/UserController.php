@@ -11,8 +11,21 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::orderBy('created_at', 'desc')->paginate(10); // 10 per halaman
-        return view('admin.user.index', compact('users'));
+        $users = User::orderBy('name', 'asc')->paginate(10);
+        
+        // Hitung statistik di controller
+        $totalUsers = User::count();
+        $adminCount = User::where('role', 'admin')->count();
+        $petugasCount = User::where('role', 'petugas')->count();
+        $userCount = User::where('role', 'user')->count();
+        
+        return view('admin.user.index', compact(
+            'users',
+            'totalUsers',
+            'adminCount',
+            'petugasCount',
+            'userCount'
+        ));
     }
 
     public function create()
@@ -26,7 +39,7 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'role' => 'required',
-            'password' => 'required|min:5'
+            'password' => 'required|min:8'
         ]);
 
         User::create([
@@ -46,28 +59,29 @@ class UserController extends Controller
     }
 
     public function update(Request $request, User $user)
-    {
-        $request->validate([
-            'name'  => 'required',
-            'email' => "required|email|unique:users,email,$user->id",
-            'role'  => 'required',
-        ]);
+{
+    $request->validate([
+        'name'  => 'required',
+        'email' => "required|email|unique:users,email,$user->id",
+        'role'  => 'required',
+        'password' => 'nullable|min:8|confirmed', // ← MINIMAL 5 KARAKTER
+    ]);
 
-        $updateData = [
-            'name'  => $request->name,
-            'email' => $request->email,
-            'role'  => $request->role,
-        ];
+    $updateData = [
+        'name'  => $request->name,
+        'email' => $request->email,
+        'role'  => $request->role,
+    ];
 
-        if ($request->password) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-
-        $user->update($updateData);
-
-        return redirect()->route('admin.user.index')
-                         ->with('success', 'User berhasil diupdate.');
+    if ($request->password) {
+        $updateData['password'] = Hash::make($request->password);
     }
+
+    $user->update($updateData);
+
+    return redirect()->route('admin.user.index')
+                     ->with('success', 'User berhasil diupdate.');
+}
 
     public function destroy(User $user)
     {

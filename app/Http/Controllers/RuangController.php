@@ -8,11 +8,39 @@ use Illuminate\Http\Request;
 
 class RuangController extends Controller
 {
-    public function index()
-    {
-        $ruangs = Ruang::with('gedung')->get();
-        return view('admin.ruang.index', compact('ruangs'));
+    public function index(Request $request)
+{
+    $query = Ruang::with('gedung');
+    
+    // Filter by gedung
+    if ($request->has('gedung_id') && $request->gedung_id) {
+        $query->where('gedung_id', $request->gedung_id);
     }
+    
+    // Sorting
+    if ($request->has('sort')) {
+        switch ($request->sort) {
+            case 'nama_desc':
+                $query->orderBy('nama', 'desc');
+                break;
+            case 'kapasitas_asc':
+                $query->orderBy('kapasitas', 'asc');
+                break;
+            case 'kapasitas_desc':
+                $query->orderBy('kapasitas', 'desc');
+                break;
+            default: // nama_asc
+                $query->orderBy('nama', 'asc');
+        }
+    } else {
+        $query->orderBy('nama', 'asc');
+    }
+    
+    $ruangs = $query->get();
+    $gedungs = Gedung::all(); // Untuk dropdown filter
+    
+    return view('admin.ruang.index', compact('ruangs', 'gedungs'));
+}
 
     public function create()
     {

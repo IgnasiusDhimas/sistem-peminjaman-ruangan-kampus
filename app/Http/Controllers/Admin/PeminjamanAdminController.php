@@ -14,11 +14,17 @@ class PeminjamanAdminController extends Controller
     public function index()
     {
         $data = Peminjaman::with(['user', 'gedung', 'ruang'])
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('jam_mulai', 'asc')
-            ->get();
+        ->orderBy('tanggal', 'desc')
+        ->orderBy('jam_mulai', 'asc')
+        ->paginate(10);
 
-        return view('admin.peminjaman.index', compact('data'));
+        // Statistik dari SEMUA data (tanpa pagination)
+        $total = Peminjaman::count();
+        $pending = Peminjaman::where('status', 'pending')->count();
+        $approved = Peminjaman::where('status', 'approved')->count();
+        $rejected = Peminjaman::where('status', 'rejected')->count();
+
+        return view('admin.peminjaman.index', compact('data', 'total', 'pending', 'approved', 'rejected'));
     }
 
     /**

@@ -94,11 +94,31 @@ class PeminjamanPetugasController extends Controller
         $request->validate([
             'gedung_id'   => 'required|exists:gedungs,id',
             'ruang_id'    => 'required|exists:ruangs,id',
-            'tanggal'     => 'required|date',
+            'tanggal'     => 'required|date|after_or_equal:today',
             'jam_mulai'   => 'required',
             'jam_selesai' => 'required|after:jam_mulai',
             'keperluan'   => 'required|string',
+        ], [
+            'tanggal.after_or_equal' => 'Tanggal peminjaman tidak boleh tanggal yang sudah lewat.',
+            'jam_selesai.after'      => 'Jam selesai harus lebih besar dari jam mulai.',
         ]);
+
+        // ✅ Validasi waktu mulai tidak boleh lewat (gabungkan tanggal + jam)
+        $waktuMulaiStr = $request->tanggal . ' ' . $request->jam_mulai;
+        try {
+            $waktuMulai = new \DateTime($waktuMulaiStr);
+            $sekarang   = new \DateTime();
+
+            if ($waktuMulai < $sekarang) {
+                return back()
+                    ->withErrors(['jam_mulai' => 'Jam mulai tidak boleh kurang dari waktu sekarang (' . now()->format('H:i') . ').'])
+                    ->withInput();
+            }
+        } catch (\Exception $e) {
+            return back()
+                ->withErrors(['jam_mulai' => 'Format tanggal atau jam tidak valid.'])
+                ->withInput();
+        }
 
         // Dummy model untuk cek bentrok
         $dummy = new Peminjaman([
@@ -111,21 +131,21 @@ class PeminjamanPetugasController extends Controller
         if ($this->isBentrok($dummy)) {
             return back()->with('error', 'Ruangan bentrok pada jam tersebut!');
         }
-        // ambil user agar dapat email-nya
-        $user = auth()->user(); 
 
+        // Ambil user agar dapat email-nya
+        $user = auth()->user();
 
         Peminjaman::create([
-            'user_id'    => Auth::id(), // petugas sebagai pembuat
+            'user_id'     => Auth::id(),
             'email_user'  => $user->email,
-            'ruang_id'   => $request->ruang_id,
-            'tanggal'    => $request->tanggal,
-            'jam_mulai'  => $request->jam_mulai,
-            'jam_selesai'=> $request->jam_selesai,
-            'keperluan'  => $request->keperluan,
-            'gedung_id' => $request->gedung_id,
-            'catatan' => $request->catatan,
-            'status'     => 'approved', // otomatis disetujui
+            'ruang_id'    => $request->ruang_id,
+            'tanggal'     => $request->tanggal,
+            'jam_mulai'   => $request->jam_mulai,
+            'jam_selesai' => $request->jam_selesai,
+            'keperluan'   => $request->keperluan,
+            'gedung_id'   => $request->gedung_id,
+            'catatan'     => $request->catatan,
+            'status'      => 'approved', // otomatis disetujui
         ]);
 
         return redirect()->route('petugas.peminjaman.index')
@@ -142,11 +162,11 @@ class PeminjamanPetugasController extends Controller
             ->where('status', 'approved')
             ->where(function ($q) use ($p) {
                 $q->whereBetween('jam_mulai', [$p->jam_mulai, $p->jam_selesai])
-                  ->orWhereBetween('jam_selesai', [$p->jam_mulai, $p->jam_selesai])
-                  ->orWhere(function ($query) use ($p) {
-                      $query->where('jam_mulai', '<=', $p->jam_mulai)
+                ->orWhereBetween('jam_selesai', [$p->jam_mulai, $p->jam_selesai])
+                ->orWhere(function ($query) use ($p) {
+                    $query->where('jam_mulai', '<=', $p->jam_mulai)
                             ->where('jam_selesai', '>=', $p->jam_selesai);
-                  });
+                });
             })
             ->exists();
     }

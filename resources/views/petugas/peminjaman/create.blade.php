@@ -30,7 +30,25 @@
         border: none;
         margin: 25px 0;
     }
+    /* ✅ Tambahan style notifikasi seperti di user */
+    .error-alert {
+        background-color: #fee2e2;
+        color: #991b1b;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border-left: 4px solid #dc2626;
+    }
     
+    .error-list {
+        margin: 0;
+        padding-left: 20px;
+    }
+    
+    .error-list li {
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
     .form-card {
         background-color: white;
         border-radius: 12px;
@@ -185,6 +203,26 @@
         <p class="form-subtitle">Isi formulir di bawah ini untuk membuat peminjaman ruangan</p>
     </div>
 
+    {{-- ✅ NOTIFIKASI ERROR: sama persis seperti di halaman user --}}
+    @if ($errors->any())
+        <div class="error-alert">
+            <ul class="error-list">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- ✅ Notifikasi error dari session('error') (untuk cek bentrok) --}}
+    @if(session('error'))
+        <div class="error-alert">
+            {{ session('error') }}
+        </div>
+    @endif
+
+
+
     <div class="form-card">
         <form action="{{ route('petugas.peminjaman.store') }}" method="POST">
             @csrf
@@ -215,7 +253,7 @@
                     <!-- Tanggal -->
                     <div class="form-group">
                         <label class="form-label">Tanggal <span>*</span></label>
-                        <input type="date" name="tanggal" class="form-input" required>
+                        <input type="date" name="tanggal" class="form-input" required min="{{ date('Y-m-d') }}">
                     </div>
                 </div>
 
